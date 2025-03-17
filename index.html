@@ -115,8 +115,7 @@
       if (gameOver) return;  // Stop the game loop if the game is over
 
       // Redraw background at the start of the frame
-      ctx.fillStyle = "#70c5ce";  // Set background color
-      ctx.fillRect(0, 0, canvas.width, canvas.height);  // Redraw the background
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clears entire canvas on every frame
 
       // Update and draw bird
       bird.update();
