@@ -114,8 +114,12 @@
     function gameLoop() {
       if (gameOver) return;  // Stop the game loop if the game is over
 
-      // Redraw background at the start of the frame
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clears entire canvas on every frame
+      // Clear the entire canvas at the start of the game loop
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the background (this only needs to be drawn once)
+      ctx.fillStyle = "#70c5ce";  // Sky color
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw bird
       bird.update();
@@ -225,10 +229,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
