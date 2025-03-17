@@ -39,7 +39,7 @@
       x: 50,
       y: canvas.height / 2,
       velocity: 0,
-      gravity: 0.15,  // Adjusted gravity for smoother fall
+      gravity: 0.25,  // Increased gravity to make the bird fall faster
       size: 20,
       draw: function() {
         ctx.fillStyle = "yellow";
@@ -65,7 +65,7 @@
         }
       },
       flap: function() {
-        this.velocity = -5;  // Flap strength adjusted for smoother movement
+        this.velocity = -7;  // Increased flap strength to make the bird rise faster
       },
       reset: function() {
         this.y = canvas.height / 2;
@@ -225,6 +225,7 @@
   </script>
 </body>
 </html>
+
 
 
 
