@@ -39,7 +39,7 @@
       x: 50,
       y: canvas.height / 2,
       velocity: 0,
-      gravity: 0.45,  // Increased gravity to make the bird fall faster
+      gravity: 0.75,  // Increased gravity to make the bird fall faster
       size: 20,
       draw: function() {
         ctx.fillStyle = "yellow";
@@ -65,7 +65,7 @@
         }
       },
       flap: function() {
-        this.velocity = -7;  // Flap strength to make the bird rise faster
+        this.velocity = -10;  // Increased flap strength to make the bird rise faster
       },
       reset: function() {
         this.y = canvas.height / 2;
@@ -76,14 +76,14 @@
     // Pipe properties
     let pipes = [];
     const pipeWidth = 50;
-    const pipeGap = 200;  // Increased gap between pipes
-    let pipeSpeed = 1;  // Slower pipe speed for a more relaxed pace
+    const pipeGap = 200;  // Gap between pipes
+    let pipeSpeed = 2;  // Increased pipe speed to match the faster pace
 
     let pipeCounter = 0;  // Track the number of pipes passed
     let passedFirstPipe = false;  // Track if the bird has passed the first pipe
 
     // This variable controls the spacing between the pipes
-    const pipeSpacing = 150;  // Decreased this value to bring pipes closer together
+    const pipeSpacing = 100;  // Reduced the spacing between pipes even more
 
     function createPipe() {
       const minHeight = 50;
