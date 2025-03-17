@@ -22,13 +22,20 @@
 <body>
   <canvas id="canvas"></canvas>
   <script>
+    // Initialize canvas and context
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+
+    // Create an off-screen canvas for double buffering
+    const bufferCanvas = document.createElement("canvas");
+    const bufferCtx = bufferCanvas.getContext("2d");
 
     // Set canvas size dynamically to fill the entire screen
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      bufferCanvas.width = window.innerWidth;
+      bufferCanvas.height = window.innerHeight;
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -38,11 +45,11 @@
       x: 50,
       y: canvas.height / 2,
       velocity: 0,
-      gravity: 1.2,
+      gravity: 0.75,
       size: 20,
       draw: function() {
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(this.x, this.y, this.size, this.size);
+        bufferCtx.fillStyle = "yellow";
+        bufferCtx.fillRect(this.x, this.y, this.size, this.size);
       },
       update: function() {
         this.velocity += this.gravity;
@@ -91,9 +98,9 @@
         bottomPipeY: bottomPipeY,
         passed: false,
         draw: function() {
-          ctx.fillStyle = "green";
-          ctx.fillRect(this.x, 0, pipeWidth, this.topPipeHeight);
-          ctx.fillRect(this.x, this.bottomPipeY, pipeWidth, canvas.height - this.bottomPipeY);
+          bufferCtx.fillStyle = "green";
+          bufferCtx.fillRect(this.x, 0, pipeWidth, this.topPipeHeight);
+          bufferCtx.fillRect(this.x, this.bottomPipeY, pipeWidth, canvas.height - this.bottomPipeY);
         },
         update: function() {
           this.x -= pipeSpeed;
@@ -106,12 +113,12 @@
     function gameLoop() {
       if (gameOver) return;
 
-      // Clear only the area where movement happens to reduce flickering
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Clear the off-screen buffer canvas at the start of each frame
+      bufferCtx.clearRect(0, 0, bufferCanvas.width, bufferCanvas.height);
 
-      // Draw background only once per frame
-      ctx.fillStyle = "#70c5ce";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Draw background once on the off-screen buffer
+      bufferCtx.fillStyle = "#70c5ce";
+      bufferCtx.fillRect(0, 0, bufferCanvas.width, bufferCanvas.height);
 
       bird.update();
       bird.draw();
@@ -145,36 +152,40 @@
         }
       });
 
-      ctx.font = "20px Arial";
-      ctx.fillStyle = "black";
-      const counterWidth = ctx.measureText("Pipes Passed: " + pipeCounter).width;
-      ctx.fillText("Pipes Passed: " + pipeCounter, (canvas.width - counterWidth) / 2, 30);
+      bufferCtx.font = "20px Arial";
+      bufferCtx.fillStyle = "black";
+      const counterWidth = bufferCtx.measureText("Pipes Passed: " + pipeCounter).width;
+      bufferCtx.fillText("Pipes Passed: " + pipeCounter, (bufferCanvas.width - counterWidth) / 2, 30);
 
       if (gameOver) {
         displayGameOver();
       }
+
+      // Copy everything from the off-screen buffer to the visible canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear visible canvas
+      ctx.drawImage(bufferCanvas, 0, 0);  // Draw the buffer onto the canvas
 
       frameCount++;
       requestAnimationFrame(gameLoop);
     }
 
     function displayGameOver() {
-      ctx.font = `${Math.min(canvas.width, canvas.height) / 10}px Arial`;
-      ctx.fillStyle = "red";
+      bufferCtx.font = `${Math.min(canvas.width, canvas.height) / 10}px Arial`;
+      bufferCtx.fillStyle = "red";
 
       const gameOverText = "Game Over";
       const restartText = "Tap to Restart";
 
-      const gameOverWidth = ctx.measureText(gameOverText).width;
-      const restartWidth = ctx.measureText(restartText).width;
+      const gameOverWidth = bufferCtx.measureText(gameOverText).width;
+      const restartWidth = bufferCtx.measureText(restartText).width;
 
       const totalHeight = (Math.min(canvas.width, canvas.height) / 10) * 2 + 10;
       const gameOverY = canvas.height / 2 - totalHeight / 2;
       const restartY = gameOverY + Math.min(canvas.width, canvas.height) / 10 + 10;
 
-      ctx.fillText(gameOverText, (canvas.width - gameOverWidth) / 2, gameOverY);
-      ctx.fillStyle = "black";
-      ctx.fillText(restartText, (canvas.width - restartWidth) / 2, restartY);
+      bufferCtx.fillText(gameOverText, (bufferCanvas.width - gameOverWidth) / 2, gameOverY);
+      bufferCtx.fillStyle = "black";
+      bufferCtx.fillText(restartText, (bufferCanvas.width - restartWidth) / 2, restartY);
     }
 
     function resetGame() {
