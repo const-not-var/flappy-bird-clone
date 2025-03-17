@@ -114,7 +114,7 @@
     function gameLoop() {
       if (gameOver) return;  // Stop the game loop if the game is over
 
-      // Clear canvas
+      // Clear the canvas only for the bird and the pipes
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw bird
@@ -225,7 +225,6 @@
   </script>
 </body>
 </html>
-
 
 
 
