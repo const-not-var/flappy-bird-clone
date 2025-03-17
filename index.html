@@ -38,7 +38,7 @@
       x: 50,
       y: canvas.height / 2,
       velocity: 0,
-      gravity: 1.2,
+      gravity: .8,
       size: 20,
       draw: function() {
         ctx.fillStyle = "yellow";
@@ -62,7 +62,7 @@
         }
       },
       flap: function() {
-        this.velocity = -10;
+        this.velocity = -12;
       },
       reset: function() {
         this.y = canvas.height / 2;
@@ -78,7 +78,7 @@
     let passedFirstPipe = false;
 
     // Adjusted pipe spacing to bring them closer
-    const pipeSpacing = 80;  // Reduced to bring pipes closer together
+    const pipeSpacing = 100;  // Reduced to bring pipes closer together
 
     function createPipe() {
       const minHeight = 50;
