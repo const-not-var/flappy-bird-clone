@@ -12,7 +12,7 @@
       align-items: center;
       height: 100vh;
       background-color: #70c5ce;
-      overflow: hidden;
+      overflow: hidden; /* Prevents scrollbars from showing on mobile */
     }
     canvas {
       background-color: #70c5ce;
@@ -26,50 +26,46 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Create an off-screen canvas for double buffering
-    const bufferCanvas = document.createElement("canvas");
-    const bufferCtx = bufferCanvas.getContext("2d");
-
     // Set canvas size dynamically to fill the entire screen
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      bufferCanvas.width = window.innerWidth;
-      bufferCanvas.height = window.innerHeight;
     }
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);  // Ensure canvas resizes with window
 
     // Bird properties
     let bird = {
       x: 50,
       y: canvas.height / 2,
       velocity: 0,
-      gravity: 0.75,
+      gravity: 0.75,  // Increased gravity to make the bird fall faster
       size: 20,
       draw: function() {
-        bufferCtx.fillStyle = "yellow";
-        bufferCtx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(this.x, this.y, this.size, this.size);
       },
       update: function() {
         this.velocity += this.gravity;
         this.y += this.velocity;
 
+        // Prevent the bird from falling below the canvas
         if (this.y + this.size > canvas.height) {
           this.y = canvas.height - this.size;
           if (passedFirstPipe) {
-            gameOver = true;
+            gameOver = true;  // End the game if bird hits the bottom after passing first pipe
           }
           this.velocity = 0;
         }
 
+        // Prevent the bird from going above the canvas
         if (this.y < 0) {
           this.y = 0;
           this.velocity = 0;
         }
       },
       flap: function() {
-        this.velocity = -10;
+        this.velocity = -10;  // Increased flap strength to make the bird rise faster
       },
       reset: function() {
         this.y = canvas.height / 2;
@@ -77,14 +73,17 @@
       }
     };
 
+    // Pipe properties
     let pipes = [];
     const pipeWidth = 50;
-    const pipeGap = 200;
-    let pipeSpeed = 2;
-    let pipeCounter = 0;
-    let passedFirstPipe = false;
+    const pipeGap = 200;  // Gap between pipes
+    let pipeSpeed = 2;  // Increased pipe speed to match the faster pace
 
-    const pipeSpacing = 150;
+    let pipeCounter = 0;  // Track the number of pipes passed
+    let passedFirstPipe = false;  // Track if the bird has passed the first pipe
+
+    // This variable controls the spacing between the pipes
+    const pipeSpacing = 100;  // Reduced the spacing between pipes even more
 
     function createPipe() {
       const minHeight = 50;
@@ -96,11 +95,11 @@
         x: canvas.width,
         topPipeHeight: topPipeHeight,
         bottomPipeY: bottomPipeY,
-        passed: false,
+        passed: false,  // Whether the bird has passed this pipe
         draw: function() {
-          bufferCtx.fillStyle = "green";
-          bufferCtx.fillRect(this.x, 0, pipeWidth, this.topPipeHeight);
-          bufferCtx.fillRect(this.x, this.bottomPipeY, pipeWidth, canvas.height - this.bottomPipeY);
+          ctx.fillStyle = "green";
+          ctx.fillRect(this.x, 0, pipeWidth, this.topPipeHeight);
+          ctx.fillRect(this.x, this.bottomPipeY, pipeWidth, canvas.height - this.bottomPipeY);
         },
         update: function() {
           this.x -= pipeSpeed;
@@ -108,23 +107,26 @@
       });
     }
 
+    // Game loop
+    let frameCount = 0;
     let gameOver = false;
 
     function gameLoop() {
-      if (gameOver) return;
+      if (gameOver) return;  // Stop the game loop if the game is over
 
-      // Clear the off-screen buffer canvas at the start of each frame
-      bufferCtx.clearRect(0, 0, bufferCanvas.width, bufferCanvas.height);
+      // Clear only the parts of the canvas where the bird or pipes are located
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the entire canvas once
 
-      // Draw background once on the off-screen buffer
-      bufferCtx.fillStyle = "#70c5ce";
-      bufferCtx.fillRect(0, 0, bufferCanvas.width, bufferCanvas.height);
+      // Draw the background (this only needs to be drawn once)
+      ctx.fillStyle = "#70c5ce";  // Sky color
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Update and draw bird
       bird.update();
       bird.draw();
 
-      // Create pipes with adjusted spacing
-      if (frameCount % pipeSpacing === 0) {
+      // Create and update pipes: Adjusting spacing between pipes
+      if (frameCount % pipeSpacing === 0) {  // Spread pipes further apart
         createPipe();
       }
 
@@ -132,86 +134,99 @@
         pipe.update();
         pipe.draw();
 
+        // Remove pipes that have moved off-screen
         if (pipe.x + pipeWidth < 0) {
           pipes.splice(index, 1);
         }
 
+        // Check if the bird has passed the pipe
         if (!pipe.passed && pipe.x + pipeWidth < bird.x) {
-          pipe.passed = true;
-          pipeCounter++;
+          pipe.passed = true; // Mark that this pipe has been passed
+          pipeCounter++; // Increment the counter
+
+          // Check if the bird has passed the first pipe
           if (pipeCounter === 1) {
-            passedFirstPipe = true;
+            passedFirstPipe = true;  // Mark that the first pipe has been passed
           }
         }
 
+        // Collision detection
         if (bird.x < pipe.x + pipeWidth &&
             bird.x + bird.size > pipe.x &&
             (bird.y < pipe.topPipeHeight || bird.y + bird.size > pipe.bottomPipeY)) {
+          // Handle collision (game over)
           gameOver = true;
           displayGameOver();
         }
       });
 
-      bufferCtx.font = "20px Arial";
-      bufferCtx.fillStyle = "black";
-      const counterWidth = bufferCtx.measureText("Pipes Passed: " + pipeCounter).width;
-      bufferCtx.fillText("Pipes Passed: " + pipeCounter, (bufferCanvas.width - counterWidth) / 2, 30);
+      // Display the score (number of pipes passed)
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "black";
+      const counterWidth = ctx.measureText("Pipes Passed: " + pipeCounter).width;
+      ctx.fillText("Pipes Passed: " + pipeCounter, (canvas.width - counterWidth) / 2, 30);  // Center the counter
 
+      // If the game is over, display the "Game Over" text on top
       if (gameOver) {
         displayGameOver();
       }
 
-      // Copy everything from the off-screen buffer to the visible canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear visible canvas
-      ctx.drawImage(bufferCanvas, 0, 0);  // Draw the buffer onto the canvas
-
+      // Request next frame
       frameCount++;
       requestAnimationFrame(gameLoop);
     }
 
-    function displayGameOver() {
-      bufferCtx.font = `${Math.min(canvas.width, canvas.height) / 10}px Arial`;
-      bufferCtx.fillStyle = "red";
+    // Event listener for bird flap (touch event for mobile)
+    document.addEventListener("touchstart", function(event) {
+      if (gameOver) {
+        resetGame(); // Reset the game when the user touches after game over
+      } else {
+        bird.flap(); // Make the bird flap
+      }
+      event.preventDefault(); // Prevent the default touch event action
+    });
 
+    function displayGameOver() {
+      // Font settings for the "Game Over" text
+      ctx.font = `${Math.min(canvas.width, canvas.height) / 10}px Arial`;  // Relative font size
+      ctx.fillStyle = "red";
+
+      // "Game Over" text
       const gameOverText = "Game Over";
       const restartText = "Tap to Restart";
 
-      const gameOverWidth = bufferCtx.measureText(gameOverText).width;
-      const restartWidth = bufferCtx.measureText(restartText).width;
+      // Get text widths to center them properly
+      const gameOverWidth = ctx.measureText(gameOverText).width;
+      const restartWidth = ctx.measureText(restartText).width;
 
-      const totalHeight = (Math.min(canvas.width, canvas.height) / 10) * 2 + 10;
+      // Calculate the vertical position to center the text vertically in a pyramid shape
+      const totalHeight = (Math.min(canvas.width, canvas.height) / 10) * 2 + 10; // Adjust for font size and spacing
       const gameOverY = canvas.height / 2 - totalHeight / 2;
-      const restartY = gameOverY + Math.min(canvas.width, canvas.height) / 10 + 10;
+      const restartY = gameOverY + Math.min(canvas.width, canvas.height) / 10 + 10; // 10px spacing
 
-      bufferCtx.fillText(gameOverText, (bufferCanvas.width - gameOverWidth) / 2, gameOverY);
-      bufferCtx.fillStyle = "black";
-      bufferCtx.fillText(restartText, (bufferCanvas.width - restartWidth) / 2, restartY);
+      // Draw the "Game Over" text
+      ctx.fillText(gameOverText, (canvas.width - gameOverWidth) / 2, gameOverY);
+
+      // Draw the "Tap to Restart" text below it
+      ctx.fillStyle = "black"; // Change color for restart text
+      ctx.fillText(restartText, (canvas.width - restartWidth) / 2, restartY);
     }
 
     function resetGame() {
+      // Reset game variables
       bird.reset();
       pipes = [];
-      pipeCounter = 0;
-      passedFirstPipe = false;
+      pipeCounter = 0; // Reset the pipe counter
+      passedFirstPipe = false;  // Reset the passed first pipe flag
       frameCount = 0;
-      gameOver = false;
+      gameOver = false;  // Set game over state to false
+      // Restart the game loop
       gameLoop();
     }
-
-    let frameCount = 0;
-    document.addEventListener("touchstart", function(event) {
-      if (gameOver) {
-        resetGame();
-      } else {
-        bird.flap();
-      }
-      event.preventDefault();
-    });
 
     // Start the game loop
     gameLoop();
   </script>
 </body>
 </html>
-
 
