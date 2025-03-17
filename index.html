@@ -114,8 +114,8 @@
     function gameLoop() {
       if (gameOver) return;  // Stop the game loop if the game is over
 
-      // Clear the entire canvas at the start of the game loop
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Clear only the parts of the canvas where the bird or pipes are located
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the entire canvas once
 
       // Draw the background (this only needs to be drawn once)
       ctx.fillStyle = "#70c5ce";  // Sky color
@@ -229,3 +229,4 @@
   </script>
 </body>
 </html>
+
