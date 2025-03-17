@@ -77,7 +77,8 @@
     let pipeCounter = 0;
     let passedFirstPipe = false;
 
-    const pipeSpacing = 150;
+    // Adjusted pipe spacing to bring them closer
+    const pipeSpacing = 100;  // Reduced to bring pipes closer together
 
     function createPipe() {
       const minHeight = 50;
@@ -181,7 +182,7 @@
       pipes = [];
       pipeCounter = 0;
       passedFirstPipe = false;
-      frameCount = 0;
+      frameCount = 0;  // Ensure frameCount starts from 0 after reset
       gameOver = false;
       gameLoop();
     }
